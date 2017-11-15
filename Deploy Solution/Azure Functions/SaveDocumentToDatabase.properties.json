@@ -1,0 +1,28 @@
+{
+  "bindings": [
+    {
+      "name": "queueItem",
+      "type": "queueTrigger",
+      "direction": "in",
+      "queueName": "",
+      "connection": "AzureWebJobsStorage"
+    },
+    {
+      "name": "outputDocument",
+      "type": "documentDB",
+      "databaseName": "",
+      "collectionName": "documents",
+      "createIfNotExists": false,
+      "connection": "",
+      "direction": "out"
+    },
+    {
+      "name": "$return",
+      "type": "queue",
+      "queueName": "",
+      "connection": "AzureWebJobsStorage",
+      "direction": "out"
+    }
+  ],
+  "enabled":  true
+}

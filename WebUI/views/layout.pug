@@ -1,0 +1,19 @@
+﻿doctype html
+html
+  head
+    title= title
+    link(rel='stylesheet', href='//ajax.aspnetcdn.com/ajax/bootstrap/3.3.2/css/bootstrap.min.css')
+    link(rel='stylesheet', href='//rawgit.com/gjunge/rateit.js/master/scripts/rateit.css')
+    link(rel='stylesheet', href='//rawgit.com/ivkremer/jquery-simple-combobox/master/css/jquery.scombobox.css')
+    link(rel='stylesheet', href='/stylesheets/main.css')
+  body
+    nav.navbar.navbar-inverse.navbar-fixed-top
+      div.navbar-header
+        a.navbar-brand(href='#') Documents From the Federal Register
+    block content
+
+    script(src='//ajax.aspnetcdn.com/ajax/jQuery/jquery-1.11.2.min.js')
+    script(src='//ajax.aspnetcdn.com/ajax/bootstrap/3.3.2/bootstrap.min.js')
+    script(src='//rawgit.com/gjunge/rateit.js/master/scripts/jquery.rateit.js')
+
+    script(src='/javascripts/webui.js')

@@ -1,0 +1,27 @@
+{
+  "bindings": [
+    {
+      "name": "timer",
+      "type": "timerTrigger",
+      "direction": "in",
+      "schedule": "0 15 6 * * *"
+    },
+    {
+      "name": "outputQueue",
+      "type": "queue",
+      "queueName": "",
+      "connection": "AzureWebJobsStorage",
+      "direction": "out"
+    },
+    {
+      "name": "existingIds",
+      "type": "documentDB",
+      "databaseName": "",
+      "collectionName": "documents",
+      "sqlQuery": "SELECT c.id FROM c",
+      "connection": "",
+      "direction": "in"
+    }
+  ],
+  "enabled": true
+}

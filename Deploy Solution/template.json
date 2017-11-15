@@ -1,0 +1,337 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "name_prefix": {
+      "defaultValue": null,
+      "type": "string"
+    },
+    "location": {
+      "defaultValue": null,
+      "type": "string"
+    }
+  },
+  "variables": {
+    "name_suffix": "[substring(uniquestring(resourceGroup().id),0,5)]",
+    "functionsSite_name": "[concat(parameters('name_prefix'), '-functions-', variables('name_suffix'))]",
+    "databaseAccount_name": "[concat(toLower(parameters('name_prefix')), '-docdb-', variables('name_suffix'))]",
+    "functionsAppServicePlan_name": "[concat(parameters('name_prefix'), '-functions-appsrvplan-', variables('name_suffix'))]",
+    "storageAccount_name": "[concat(toLower(parameters('name_prefix')), 'storage', variables('name_suffix'))]",
+    "textAnalyticsAccount_name": "[concat(parameters('name_prefix'), '-textanalytics-', variables('name_suffix'))]",
+    "hostNameBindings_azurewebsites_name": "[concat(variables('functionsSite_name'), '.azurewebsites.net')]"
+  },
+  "resources": [
+    {
+      "comments": "Create the DocumentDB account",
+      "type": "Microsoft.DocumentDB/databaseAccounts",
+      "kind": "GlobalDocumentDB",
+      "name": "[variables('databaseAccount_name')]",
+      "apiVersion": "2015-04-08",
+      "location": "[parameters('location')]",
+      "tags": {
+        "defaultExperience": "DocumentDB"
+      },
+      "scale": null,
+      "properties": {
+        "databaseAccountOfferType": "Standard",
+        "consistencyPolicy": {
+          "defaultConsistencyLevel": "Session",
+          "maxIntervalInSeconds": 5,
+          "maxStalenessPrefix": 100
+        },
+        "name": null
+      },
+      "dependsOn": []
+    },
+    {
+      "comments": "Create the storage account",
+      "type": "Microsoft.Storage/storageAccounts",
+      "sku": {
+        "name": "Standard_LRS",
+        "tier": "Standard"
+      },
+      "kind": "Storage",
+      "name": "[variables('storageAccount_name')]",
+      "apiVersion": "2016-01-01",
+      "location": "[parameters('location')]",
+      "tags": {},
+      "scale": null,
+      "properties": {},
+      "dependsOn": []
+    },
+    {
+      "comments": "Create the Cognitive Services (text analytics) account",
+      "type": "Microsoft.CognitiveServices/accounts",
+      "sku": {
+        "name": "F0"
+      },
+      "kind": "TextAnalytics",
+      "name": "[variables('textAnalyticsAccount_name')]",
+      "apiVersion": "2016-02-01-preview",
+      "location": "westus",
+      "scale": null,
+      "properties": {},
+      "dependsOn": []
+    },
+    {
+      "comments": "Create server farm / app service plan",
+      "type": "Microsoft.Web/serverfarms",
+      "sku": {
+        "name": "Y1",
+        "tier": "Dynamic",
+        "size": "Y1",
+        "family": "Y",
+        "capacity": 0
+      },
+      "kind": "functionapp",
+      "name": "[variables('functionsAppServicePlan_name')]",
+      "apiVersion": "2016-09-01",
+      "location": "[parameters('location')]",
+      "scale": null,
+      "properties": {
+        "name": "[variables('functionsAppServicePlan_name')]",
+        "workerTierName": null,
+        "adminSiteName": null,
+        "hostingEnvironmentProfile": null,
+        "perSiteScaling": false,
+        "reserved": false,
+        "targetWorkerCount": 0,
+        "targetWorkerSizeId": 0
+      },
+      "dependsOn": []
+    },
+    {
+      "comments": "Create Azure Functions app site.  This includes the Application Settings for site!",
+      "type": "Microsoft.Web/sites",
+      "kind": "functionapp",
+      "name": "[variables('functionsSite_name')]",
+      "apiVersion": "2016-08-01",
+      "location": "[parameters('location')]",
+      "scale": null,
+      "properties": {
+        "enabled": true,
+        "hostNameSslStates": [
+          {
+            "name": "[concat(variables('functionsSite_name'),'.azurewebsites.net')]",
+            "sslState": "Disabled",
+            "virtualIP": null,
+            "thumbprint": null,
+            "toUpdate": null,
+            "hostType": "Standard"
+          },
+          {
+            "name": "[concat(variables('functionsSite_name'),'.scm.azurewebsites.net')]",
+            "sslState": "Disabled",
+            "virtualIP": null,
+            "thumbprint": null,
+            "toUpdate": null,
+            "hostType": "Repository"
+          }
+        ],
+        "serverFarmId": "[resourceId('Microsoft.Web/serverfarms', variables('functionsAppServicePlan_name'))]",
+        "reserved": false,
+        "siteConfig": {
+          "appSettings": [
+            {
+              "name": "AzureWebJobsDashboard ",
+              "value": "[concat('DefaultEndpointsProtocol=https;AccountName=', variables('storageAccount_name'), ';AccountKey=', listKeys(resourceId('Microsoft.Storage/storageAccounts', variables('storageAccount_name')), providers('Microsoft.Storage', 'storageAccounts').apiVersions[0]).keys[0].value)]"
+            },
+            {
+              "name": "AzureWebJobsStorage",
+              "value": "[concat('DefaultEndpointsProtocol=https;AccountName=', variables('storageAccount_name'), ';AccountKey=', listKeys(resourceId('Microsoft.Storage/storageAccounts', variables('storageAccount_name')), providers('Microsoft.Storage', 'storageAccounts').apiVersions[0]).keys[0].value)]"
+            },
+            {
+              "name": "WEBSITE_CONTENTAZUREFILECONNECTIONSTRING",
+              "value": "[concat('DefaultEndpointsProtocol=https;AccountName=', variables('storageAccount_name'), ';AccountKey=', listKeys(resourceId('Microsoft.Storage/storageAccounts', variables('storageAccount_name')), providers('Microsoft.Storage', 'storageAccounts').apiVersions[0]).keys[0].value)]"
+            },
+            {
+              "name": "WEBSITE_CONTENTSHARE",
+              "value": "[concat(toLower(variables('functionsSite_name')), '-9d20')]"
+            },
+            {
+              "name": "FUNCTIONS_EXTENSION_VERSION",
+              "value": "~1"
+            },
+            {
+              "name": "WEBSITE_NODE_DEFAULT_VERSION",
+              "value": "6.5.0"
+            },
+            {
+              "name": "WEBSITE_TIME_ZONE",
+              "value": "Eastern Standard Time"
+            },
+            {
+              "name": "[concat(parameters('name_prefix'), '-db')]",
+              "value": "[concat('AccountEndpoint=', reference(variables('databaseAccount_name')).documentEndpoint, ';AccountKey=', listkeys(variables('databaseAccount_name'), '2015-04-08').primaryMasterKey)]"
+            },
+            {
+              "name": "text_analytics_key",
+              "value": "[listkeys(variables('textAnalyticsAccount_name'), '2016-02-01-preview').key1]"
+            }
+          ]
+        },
+        "scmSiteAlsoStopped": false,
+        "hostingEnvironmentProfile": null,
+        "clientAffinityEnabled": false,
+        "clientCertEnabled": false,
+        "hostNamesDisabled": false,
+        "containerSize": 1536,
+        "dailyMemoryTimeQuota": 0,
+        "cloningInfo": null
+      },
+      "dependsOn": [
+        "[resourceId('Microsoft.Web/serverfarms', variables('functionsAppServicePlan_name'))]",
+        "[resourceId('Microsoft.DocumentDB/databaseAccounts', variables('databaseAccount_name'))]",
+        "[resourceId('Microsoft.Storage/storageAccounts', variables('storageAccount_name'))]",
+        "[resourceId('Microsoft.CognitiveServices/accounts', variables('textAnalyticsAccount_name'))]"
+      ]
+    },
+    {
+      "comments": "Config for the Functions web site",
+      "type": "Microsoft.Web/sites/config",
+      "name": "[concat(variables('functionsSite_name'), '/web')]",
+      "apiVersion": "2016-08-01",
+      "location": "[parameters('location')]",
+      "scale": null,
+      "properties": {
+        "numberOfWorkers": 1,
+        "defaultDocuments": [
+          "Default.htm",
+          "Default.html",
+          "Default.asp",
+          "index.htm",
+          "index.html",
+          "iisstart.htm",
+          "default.aspx",
+          "index.php",
+          "hostingstart.html"
+        ],
+        "netFrameworkVersion": "v4.0",
+        "phpVersion": "5.6",
+        "pythonVersion": "",
+        "nodeVersion": "",
+        "linuxFxVersion": "",
+        "requestTracingEnabled": false,
+        "remoteDebuggingEnabled": false,
+        "remoteDebuggingVersion": "VS2012",
+        "httpLoggingEnabled": false,
+        "logsDirectorySizeLimit": 35,
+        "detailedErrorLoggingEnabled": false,
+        "publishingUsername": "[concat('$', parameters('name_prefix'), '-functions')]",
+        "publishingPassword": null,
+        "appSettings": null,
+        "metadata": null,
+        "connectionStrings": null,
+        "machineKey": null,
+        "handlerMappings": null,
+        "documentRoot": null,
+        "scmType": "None",
+        "use32BitWorkerProcess": true,
+        "webSocketsEnabled": false,
+        "alwaysOn": false,
+        "javaVersion": null,
+        "javaContainer": null,
+        "javaContainerVersion": null,
+        "appCommandLine": "",
+        "managedPipelineMode": "Integrated",
+        "virtualApplications": [
+          {
+            "virtualPath": "/",
+            "physicalPath": "site\\wwwroot",
+            "preloadEnabled": false,
+            "virtualDirectories": null
+          }
+        ],
+        "winAuthAdminState": 0,
+        "winAuthTenantState": 0,
+        "customAppPoolIdentityAdminState": false,
+        "customAppPoolIdentityTenantState": false,
+        "runtimeADUser": null,
+        "runtimeADUserPassword": null,
+        "loadBalancing": "LeastRequests",
+        "routingRules": [],
+        "experiments": {
+          "rampUpRules": []
+        },
+        "limits": null,
+        "autoHealEnabled": false,
+        "autoHealRules": {
+          "triggers": null,
+          "actions": null
+        },
+        "tracingOptions": null,
+        "vnetName": "",
+        "siteAuthEnabled": false,
+        "siteAuthSettings": {
+          "enabled": null,
+          "unauthenticatedClientAction": null,
+          "tokenStoreEnabled": null,
+          "allowedExternalRedirectUrls": null,
+          "defaultProvider": null,
+          "clientId": null,
+          "clientSecret": null,
+          "issuer": null,
+          "allowedAudiences": null,
+          "additionalLoginParams": null,
+          "isAadAutoProvisioned": false,
+          "googleClientId": null,
+          "googleClientSecret": null,
+          "googleOAuthScopes": null,
+          "facebookAppId": null,
+          "facebookAppSecret": null,
+          "facebookOAuthScopes": null,
+          "twitterConsumerKey": null,
+          "twitterConsumerSecret": null,
+          "microsoftAccountClientId": null,
+          "microsoftAccountClientSecret": null,
+          "microsoftAccountOAuthScopes": null
+        },
+        "cors": {
+          "allowedOrigins": [
+            "https://functions.azure.com",
+            "https://functions-staging.azure.com",
+            "https://functions-next.azure.com"
+          ]
+        },
+        "push": null,
+        "apiDefinition": null,
+        "autoSwapSlotName": null,
+        "localMySqlEnabled": false,
+        "ipSecurityRestrictions": null
+      },
+      "dependsOn": [
+        "[resourceId('Microsoft.Web/sites', variables('functionsSite_name'))]"
+      ]
+    },
+    {
+      "comments": "Create host name bindings for the Azure Functions web site",
+      "type": "Microsoft.Web/sites/hostNameBindings",
+      "name": "[concat(variables('functionsSite_name'), '/', variables('hostNameBindings_azurewebsites_name'))]",
+      "apiVersion": "2016-08-01",
+      "location": "[parameters('location')]",
+      "scale": null,
+      "properties": {
+        "siteName": "[variables('functionsSite_name')]",
+        "domainId": null,
+        "hostNameType": "Verified"
+      },
+      "dependsOn": [
+        "[resourceId('Microsoft.Web/sites', variables('functionsSite_name'))]"
+      ]
+    }
+  ],
+  "outputs": {
+    "databaseAccountName": {
+      "type": "string",
+      "value": "[variables('databaseAccount_name')]"
+    },
+    "storageAccountName": {
+      "type": "string",
+      "value": "[variables('storageAccount_name')]"
+    },
+    "functionsSiteName": {
+      "type": "string",
+      "value":  "[variables('functionsSite_name')]"
+    }
+  }
+}

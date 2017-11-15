@@ -1,0 +1,41 @@
+﻿body {
+    padding: 50px;
+    font: 14px "Lucida Grande", Helvetica, Arial, sans-serif;
+}
+
+a {
+    color: #00B7FF;
+}
+
+table.main-display {}
+
+table.main-display > tbody > tr > td:first-child {
+    white-space: nowrap;
+}
+
+div.document-details > div {
+    margin: 4pt 0pt 4pt 0pt;
+}
+
+table.document-heading {
+    width: 100%;
+}
+
+table.document-heading > tbody > tr > td:nth-child(2) {
+    width: 100%;
+    padding-right: 24pt;
+}
+
+table.document-heading > tbody > tr > td > h4 {
+    display: inline;
+    margin: 0pt;
+    padding: 0pt;
+}
+
+table.document-heading > tbody > tr > td:last-child {
+    white-space: nowrap;
+}
+
+table.document-heading > tbody > tr > td > select {
+    margin-right: 12pt;
+}

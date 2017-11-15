@@ -1,0 +1,67 @@
+﻿extends layout
+block content
+    h1 #{title}
+    br
+
+    div(style="margin-bottom: 14pt;") #{groupedDocuments.totalDocumentCount} documents waiting to be reviewed
+
+    each category in groupedDocuments.categories
+        div.panel-group
+            div.panel.panel-default
+                div.panel-heading
+                    button(type="button", data-type="plus", data-toggle="collapse", data-target="#category-details-" + category.idName, style="margin-right: 12pt; margin-bottom: 12pt;").btn.btn-success.btn-number
+                        span.glyphicon.glyphicon-plus
+                    h2(style="display: inline") Category:
+                        i #{category.name}
+                div(id = "category-details-" + category.idName, style="padding-top: 8pt;").panel-collapse.collapse
+                    each agency in category.agencies
+                        div.panel-group
+                            div.panel.panel-default
+                                div.panel-heading
+                                    button(type="button", data-type="plus", data-toggle="collapse", data-target="#cat-agency-details-" + category.idName + "-" + agency.idName, style="margin-right: 12pt; margin-bottom: 9pt;").btn.btn-info.btn-number
+                                        span.glyphicon.glyphicon-plus
+                                    h3(style="display: inline") #{agency.name}
+                                div(id = "cat-agency-details-" + category.idName + "-" + agency.idName).panel-collapse.collapse
+                                    each federalDocument in agency.documents
+                                        div.panel-group
+                                            div(style="padding-left: 36pt;").panel.panel-default
+                                                div.panel-heading
+                                                    table.document-heading
+                                                        tbody
+                                                            tr
+                                                                td
+                                                                    button(type="button", data-type="plus", data-toggle="collapse", data-target="#doc-" + federalDocument.id + "-" + agency.idName, data-documentid = federalDocument.id, style="margin-right: 6pt; margin-bottom: 0pt;").btn.btn-info.btn-number.btn-xs.doc-expand-btn
+                                                                        span.glyphicon.glyphicon-plus
+                                                                td
+                                                                    h4(title = "Expected Interest Score: " + federalDocument.predicted_interest_score ) [#{federalDocument.type}] #{federalDocument.id}: #{federalDocument.title}
+                                                                td
+                                                                    - var categories = ["Other", "Oil & Gas", "Glass Manufacturing", "Paper Manufacturing", "Nylon Fiber", "Electronics Manufacturing", "Agricultural", "Transportation"];
+                                                                    select(data-documentid = federalDocument.id).category-list
+                                                                        each category in categories
+                                                                            option #{category}
+                                                                    div(data-rateit-value=federalDocument.actual_rating, data-rateit-ispreset="true", data-documentid = federalDocument.id).rateit
+                                                div(style = "padding-left: 24pt;", id = "doc-" + federalDocument.id + "-" + agency.idName).panel-collapse.collapse.document-details
+                                                    - var date  = new Date(federalDocument.publication_date);
+                                                    - var day   = date.getDate();
+                                                    - var month = date.getMonth() + 1;
+                                                    - var year  = date.getFullYear();
+                                                    div
+                                                        b Date Published:&nbsp;
+                                                        span #{month + "/" + day + "/" + year}
+                                                    div
+                                                        if federalDocument.abstract_text
+                                                            b Abstract:&nbsp;
+                                                            span #{federalDocument.abstract_text}
+                                                        else if federalDocument.excerpts
+                                                            b Excerpts:&nbsp;
+                                                            span #{federalDocument.excerpts}
+                                                        else
+                                                            b Abstract:&nbsp;
+                                                            i none
+                                                    div
+                                                        b Key Phrases:&nbsp;
+                                                        span !{ federalDocument.key_phrases ? federalDocument.key_phrases.join().replace(/,/g, ",&nbsp;&nbsp;") : "<i>none</i>" }
+                                                    div
+                                                        b Full Document:&nbsp;
+                                                        a(href = federalDocument.pdf_url, target = "_blank", data-documentid = federalDocument.id).pdf-link #{federalDocument.pdf_url}
+

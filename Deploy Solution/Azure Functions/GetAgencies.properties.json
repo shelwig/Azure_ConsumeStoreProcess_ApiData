@@ -1,0 +1,18 @@
+{
+  "bindings": [
+    {
+      "name": "timer",
+      "type": "timerTrigger",
+      "direction": "in",
+      "schedule": "0 5 6 * * *"
+    },
+    {
+      "name": "outputQueue",
+      "type": "queue",
+      "queueName": "",
+      "connection": "AzureWebJobsStorage",
+      "direction": "out"
+    }
+  ],
+  "enabled": true
+}
