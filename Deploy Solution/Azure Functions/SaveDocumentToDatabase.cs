@@ -3,7 +3,6 @@
 using System;
 using System.Net;
 using System.Text.RegularExpressions;
-using Microsoft.Azure.Documents.Client;
 using Newtonsoft.Json;
 
 public static string Run(string queueItem, out Document outputDocument, TraceWriter log) {
@@ -31,12 +30,14 @@ public static string Run(string queueItem, out Document outputDocument, TraceWri
     outputDocument.full_text_xml_url = documentDetail.full_text_xml_url;
     outputDocument.raw_text_url = documentDetail.raw_text_url;
 
-    // Get the full text of the document
-    string fullText = GetFullText(outputDocument.raw_text_url);
-    using (MemoryStream memoryStream = new MemoryStream(pic.Data))
-    {
-        Attachment attachment = await Client.CreateAttachmentAsync(outputDocument.AttachmentsLink, memoryStream, new MediaOptions { ContentType = "text/plain", Slug = "raw_text" });
+    // Cosmos DB requests can only be 2MB in size... so don't let the full text of the
+    // document get too large.
+    const int MaxRawTextSize = 750000;
+    string rawText = GetRawText(outputDocument.raw_text_url);
+    if (rawText.Length > MaxRawTextSize) {
+        rawText = rawText.Substring(0, MaxRawTextSize);
     }
+    outputDocument.raw_text = rawText;
 
     // Return the document ID so it will get thrown into a queue
     // for further processing 
@@ -49,7 +50,7 @@ private static dynamic GetDocumentDetails(string document_number) {
     return JsonConvert.DeserializeObject<dynamic>(jsonString);
 }
 
-private static string GetFullText(string raw_text_url) {
+private static string GetRawText(string raw_text_url) {
     string output = GetJsonFromApi(raw_text_url);
 
     // Do some light processing of the raw text
@@ -134,6 +135,7 @@ public class Document
     public string body_html_url { get; set; }
     public string full_text_xml_url { get; set; }
     public string raw_text_url { get; set; }
+    public string raw_text { get; set; }
     public string[] key_phrases { get; set; }
 
     public string predicted_category { get; set; }
