@@ -8,6 +8,7 @@ public static void Run(TimerInfo timer, ICollector<string> outputQueue, TraceWri
     string apiUrl = "https://www.federalregister.gov/api/v1/agencies";
     string jsonString = "";
 
+    ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls12 | SecurityProtocolType.Tls11 | SecurityProtocolType.Tls;
     using (var webClient = new WebClient()) {
         jsonString = webClient.DownloadString(apiUrl);
     }

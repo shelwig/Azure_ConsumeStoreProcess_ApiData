@@ -2,7 +2,6 @@
 block content
     h1 #{title}
     br
-
     div(style="margin-bottom: 14pt;") #{groupedDocuments.totalDocumentCount} documents waiting to be reviewed
 
     each category in groupedDocuments.categories
@@ -35,10 +34,10 @@ block content
                                                                 td
                                                                     h4(title = "Expected Interest Score: " + federalDocument.predicted_interest_score ) [#{federalDocument.type}] #{federalDocument.id}: #{federalDocument.title}
                                                                 td
-                                                                    - var categories = ["Other", "Oil & Gas", "Glass Manufacturing", "Paper Manufacturing", "Nylon Fiber", "Electronics Manufacturing", "Agricultural", "Transportation"];
+                                                                    - var categories = ["Other", "Oil & Gas", "Minerals", "Biofuel", "Glass Manufacturing", "Paper Manufacturing", "Nylon Fiber", "Electronics Manufacturing", "Agricultural", "Transportation"];
                                                                     select(data-documentid = federalDocument.id).category-list
                                                                         each category in categories
-                                                                            option #{category}
+                                                                            option(selected = (category == federalDocument.actual_category)) #{category}
                                                                     div(data-rateit-value=federalDocument.actual_rating, data-rateit-ispreset="true", data-documentid = federalDocument.id).rateit
                                                 div(style = "padding-left: 24pt;", id = "doc-" + federalDocument.id + "-" + agency.idName).panel-collapse.collapse.document-details
                                                     - var date  = new Date(federalDocument.publication_date);
@@ -60,7 +59,7 @@ block content
                                                             i none
                                                     div
                                                         b Key Phrases:&nbsp;
-                                                        span !{ federalDocument.key_phrases ? federalDocument.key_phrases.join().replace(/,/g, ",&nbsp;&nbsp;") : "<i>none</i>" }
+                                                        span !{ federalDocument.key_phrases && federalDocument.key_phrases.join ? federalDocument.key_phrases.join().replace(/,/g, ",&nbsp;&nbsp;") : "<i>none</i>" }
                                                     div
                                                         b Full Document:&nbsp;
                                                         a(href = federalDocument.pdf_url, target = "_blank", data-documentid = federalDocument.id).pdf-link #{federalDocument.pdf_url}

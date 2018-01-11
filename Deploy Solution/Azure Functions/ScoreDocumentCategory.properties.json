@@ -15,13 +15,6 @@
       "id": "{queueTrigger}",
       "connection": "",
       "direction": "in"
-    },
-    {
-      "name": "$return",
-      "type": "queue",
-      "queueName": "",
-      "connection": "AzureWebJobsStorage",
-      "direction": "out"
     }
   ],
   "enabled": true

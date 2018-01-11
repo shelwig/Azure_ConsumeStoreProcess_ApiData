@@ -9,6 +9,22 @@ FederalDocumentList.prototype = {
     showFederalDocuments: function (req, res) {
         var self = this;
 
+        var filterDate = req.query["d"];
+        var dayFactor = 0;
+        filterDate = new Date(filterDate + " 00:00:00");
+        if (isNaN(filterDate) == true || filterDate > new Date()) {
+            filterDate = new Date();
+            dayFactor = -1;
+        }
+        if (filterDate.getDay() == 0) {
+            dayFactor = -2;
+        }
+        else if (filterDate.getDay() == 1) {
+            dayFactor = -3;
+        }
+        filterDate.setDate(filterDate.getDate() + dayFactor);
+        filterDate = filterDate.toISOString().substring(0, 10);
+
         async.parallel(
             {
                 "agencies": function (callback) {
@@ -20,14 +36,11 @@ FederalDocumentList.prototype = {
                 },
                 "documents": function (callback) {
                     var documentQuerySpec = {
-                        query: 'SELECT r.id, r.title, r.type, r.abstract_text, r.pdf_url, r.publication_date, r.agency_ids, r.key_phrases, r.predicted_category, r.predicted_interest_score, r.actual_category, r.actual_rating FROM root r  WHERE CONTAINS(r.publication_date, "2017-10-2")',
-                        /*
-                        query: 'SELECT r.* FROM root r WHERE r.actual_category=@actual_category',
+                        query: 'SELECT r.id, r.title, r.type, r.abstract_text, r.pdf_url, r.publication_date, r.agency_ids, r.key_phrases, r.predicted_category, r.predicted_interest_score, r.actual_category, r.actual_rating FROM root r  WHERE r.publication_date = @pub_date',
                         parameters: [{
-                            name: '@actual_category',
-                            value: "Other"
+                            name: '@pub_date',
+                            value: filterDate
                         }]
-                        */
                     };
 
                     self.federalDocumentUtilities.findDocument(documentQuerySpec, callback);
@@ -75,7 +88,7 @@ FederalDocumentList.prototype = {
                     else {
                         category = {};
                         category.name = categoryName;
-                        category.idName = categoryName.replace(/ /g, '-');
+                        category.idName = categoryName.replace(/[^A-z0-9]/g, '-');
                         category.agencyNames = [];
                         category.agencies = [];
                         groupedDocuments.categoryNames.push(categoryName);
@@ -130,7 +143,8 @@ FederalDocumentList.prototype = {
                 res.render('index', {
                     title: 'Federal Documents for Review',
                     federalDocuments: documents,
-                    groupedDocuments: groupedDocuments
+                    groupedDocuments: groupedDocuments,
+                    filterDate: filterDate
                 });
             }
         );

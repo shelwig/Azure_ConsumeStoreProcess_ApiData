@@ -127,7 +127,7 @@ $storageContext = New-AzureStorageContext -StorageAccountName $templateOutputVal
 
 # Create storage queues needed for the solution
 Write-Host "Creating storage queues...";
-$queueNames = "-agency", "-doc-add", "-doc-ai";
+$queueNames = "-agency", "-doc-add", "-doc-ai", "-doc-score-category", "-doc-score-rating";
 $queueNames = $queueNames | ForEach-Object { $_ = $resourceGroupName.ToLower() + $_ ; $_ };
 $queueNames | New-AzureStorageQueue -Context $storageContext | out-null
 Write-Host "`n"

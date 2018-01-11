@@ -46,6 +46,8 @@ public static void Run(TimerInfo timer, IEnumerable<DocumentId> existingIds, ICo
 private static string GetJsonFromApi(string apiUrl) {
     string output = "";
 
+    ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls12 | SecurityProtocolType.Tls11 | SecurityProtocolType.Tls;
+
     // This code runs too fast!
     // The federal API has a rate limit.  If we get a 429 error, then take a break and try again
     int errorCount = 0;

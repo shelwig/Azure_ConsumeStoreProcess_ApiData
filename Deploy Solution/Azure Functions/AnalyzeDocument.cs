@@ -7,7 +7,7 @@ using System.Text;
 using System.Text.RegularExpressions;
 using Newtonsoft.Json;
 
-public static void Run(string queueItem, dynamic inputDocument, TraceWriter log) {
+public static string Run(string queueItem, dynamic inputDocument, TraceWriter log) {
     if (inputDocument != null) {
         string apiKey = System.Environment.GetEnvironmentVariable("text_analytics_key", EnvironmentVariableTarget.Process);
         string apiUrl = "https://westus.api.cognitive.microsoft.com/text/analytics/v2.0/keyPhrases";
@@ -52,6 +52,8 @@ public static void Run(string queueItem, dynamic inputDocument, TraceWriter log)
         inputDocument.key_phrases = keyPhrases;
         inputDocument.date_update = DateTime.UtcNow;
     }
+
+    return queueItem;
 }
 
 private static List<TextAnalyticsDocumentChunk> ConvertTextToChunks (string document_number, string raw_text) {

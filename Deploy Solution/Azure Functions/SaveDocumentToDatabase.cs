@@ -69,6 +69,8 @@ private static string GetRawText(string raw_text_url) {
 private static string GetJsonFromApi(string apiUrl) {
     string output = "";
 
+    ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls12 | SecurityProtocolType.Tls11 | SecurityProtocolType.Tls;
+
     // This code runs too fast!
     // The federal API has a rate limit.  If we get a 429 error, then take a break and try again
     int errorCount = 0;
@@ -108,7 +110,7 @@ public class Document
         this.predicted_category = "";
         this.predicted_interest_score = 0;
         this.actual_category = "Other";
-        this.actual_rating = -1;
+        this.actual_interest_score = -1;
 
         this.date_categorized = null;
         this.date_expanded = null;
@@ -142,7 +144,7 @@ public class Document
     public decimal predicted_interest_score { get; set; }
 
     public string actual_category { get; set; }
-    public int actual_rating { get; set; }
+    public int actual_interest_score { get; set; }
     public string date_categorized { get; set; }
     public string date_rated { get; set; }
     public string date_expanded { get; set; }

@@ -66,6 +66,11 @@ foreach ($functionName in $functionNames) {
 ($functions["AnalyzeDocument"].properties.bindings | Where-Object -Property "name" -eq "queueItem").queueName = $queueNamePrefix + "-doc-ai";
 ($functions["AnalyzeDocument"].properties.bindings | Where-Object -Property "name" -eq "inputDocument").databaseName = $resourceGroupName + "-db";
 ($functions["AnalyzeDocument"].properties.bindings | Where-Object -Property "name" -eq "inputDocument").connection = $resourceGroupName + "-db";
+($functions["AnalyzeDocument"].properties.bindings | Where-Object -Property "name" -eq '$return').queueName = $queueNamePrefix + "-doc-score-category";
+
+($functions["ScoreDocumentCategory"].properties.bindings | Where-Object -Property "name" -eq "queueItem").queueName = $queueNamePrefix + "-doc-score-category";
+($functions["ScoreDocumentCategory"].properties.bindings | Where-Object -Property "name" -eq "inputDocument").databaseName = $resourceGroupName + "-db";
+($functions["ScoreDocumentCategory"].properties.bindings | Where-Object -Property "name" -eq "inputDocument").connection = $resourceGroupName + "-db";
 
 # Now that we have the source code loaded up and all of the properties set correctly, let's upload the functions to Azure
 foreach ($functionName in $functionNames) {

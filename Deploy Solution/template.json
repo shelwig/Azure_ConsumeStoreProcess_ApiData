@@ -12,7 +12,7 @@
     }
   },
   "variables": {
-    "name_suffix": "[substring(uniquestring(resourceGroup().id),0,5)]",
+    "name_suffix": "[substring(uniquestring(resourceGroup().id), 0, 5)]",
     "functionsSite_name": "[concat(parameters('name_prefix'), '-functions-', variables('name_suffix'))]",
     "databaseAccount_name": "[concat(toLower(parameters('name_prefix')), '-docdb-', variables('name_suffix'))]",
     "functionsAppServicePlan_name": "[concat(parameters('name_prefix'), '-functions-appsrvplan-', variables('name_suffix'))]",
