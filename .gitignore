@@ -6,3 +6,5 @@
 /.vs
 /WebUI/node_modules
 *.gitignore
+
+*.vs
