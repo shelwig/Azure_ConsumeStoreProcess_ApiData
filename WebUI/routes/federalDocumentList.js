@@ -16,14 +16,10 @@ FederalDocumentList.prototype = {
             filterDate = new Date();
             dayFactor = -1;
         }
-        if (filterDate.getDay() == 0) {
-            dayFactor = -2;
-        }
-        else if (filterDate.getDay() == 1) {
-            dayFactor = -3;
-        }
+        
         filterDate.setDate(filterDate.getDate() + dayFactor);
         filterDate = filterDate.toISOString().substring(0, 10);
+        console.log(filterDate);
 
         async.parallel(
             {
